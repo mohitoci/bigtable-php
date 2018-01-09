@@ -50,7 +50,7 @@
         "ramsey/uuid": "~3",
         "google/proto-client": "0.27.0",
         "google/gax": "dev-json-transport",
-        "google/protobuf": "v3.5.0.1",
+        "google/protobuf": "^3.5.1",
         "google/auth": "^1.2.0"
     },
     "require-dev": {
