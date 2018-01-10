@@ -21,41 +21,41 @@
  * https://github.com/google/googleapis/blob/master/google/bigtable/v2/bigtable.proto
  * and updates to that file get reflected here through a refresh process.
  *
- * EXPERIMENTAL: this client library class has not yet been declared GA (1.0). This means that
- * even though we intent the surface to be stable, we may make backwards incompatible changes
- * if necessary.
+ * EXPERIMENTAL: this client library class has not yet been declared beta. This class may change
+ * more frequently than those which have been declared beta or 1.0, including changes which break
+ * backwards compatibility.
  *
  * @experimental
  */
 
 namespace Google\Cloud\Bigtable\V2\Gapic;
 
-use Google\ApiCore\AgentHeaderDescriptor;
-use Google\ApiCore\ApiCallable;
-use Google\ApiCore\CallSettings;
-use Google\ApiCore\GrpcCredentialsHelper;
-use Google\ApiCore\PathTemplate;
-use Google\ApiCore\ValidationException;
-use Google\Cloud\Bigtable\V2\BigtableGrpcClient;
-use Google\Cloud\Bigtable\V2\CheckAndMutateRowRequest;
-use Google\Cloud\Bigtable\V2\MutateRowRequest;
-use Google\Cloud\Bigtable\V2\MutateRowsRequest;
-use Google\Cloud\Bigtable\V2\MutateRowsRequest_Entry as Entry;
-use Google\Cloud\Bigtable\V2\Mutation;
-use Google\Cloud\Bigtable\V2\ReadModifyWriteRowRequest;
-use Google\Cloud\Bigtable\V2\ReadModifyWriteRule;
-use Google\Cloud\Bigtable\V2\ReadRowsRequest;
-use Google\Cloud\Bigtable\V2\RowFilter;
-use Google\Cloud\Bigtable\V2\RowSet;
-use Google\Cloud\Bigtable\V2\SampleRowKeysRequest;
+use Google\Bigtable\V2\BigtableGrpcClient;
+use Google\Bigtable\V2\CheckAndMutateRowRequest;
+use Google\Bigtable\V2\MutateRowRequest;
+use Google\Bigtable\V2\MutateRowsRequest;
+use Google\Bigtable\V2\MutateRowsRequest_Entry as Entry;
+use Google\Bigtable\V2\Mutation;
+use Google\Bigtable\V2\ReadModifyWriteRowRequest;
+use Google\Bigtable\V2\ReadModifyWriteRule;
+use Google\Bigtable\V2\ReadRowsRequest;
+use Google\Bigtable\V2\RowFilter;
+use Google\Bigtable\V2\RowSet;
+use Google\Bigtable\V2\SampleRowKeysRequest;
 use Google\Cloud\Version;
+use Google\GAX\AgentHeaderDescriptor;
+use Google\GAX\ApiCallable;
+use Google\GAX\CallSettings;
+use Google\GAX\GrpcCredentialsHelper;
+use Google\GAX\PathTemplate;
+use Google\GAX\ValidationException;
 
 /**
  * Service Description: Service for reading from and writing to existing Bigtable tables.
  *
- * EXPERIMENTAL: this client library class has not yet been declared GA (1.0). This means that
- * even though we intent the surface to be stable, we may make backwards incompatible changes
- * if necessary.
+ * EXPERIMENTAL: this client library class has not yet been declared beta. This class may change
+ * more frequently than those which have been declared beta or 1.0, including changes which break
+ * backwards compatibility.
  *
  * This class provides the ability to make remote calls to the backing service through method
  * calls that map to API methods. Sample code to get started:
@@ -257,8 +257,8 @@ class BigtableGapicClient
      *     @type array $retryingOverride
      *           An associative array in which the keys are method names (e.g. 'createFoo'), and
      *           the values are retry settings to use for that method. The retry settings for each
-     *           method can be a {@see Google\ApiCore\RetrySettings} object, or an associative array
-     *           of retry settings parameters. See the documentation on {@see Google\ApiCore\RetrySettings}
+     *           method can be a {@see Google\GAX\RetrySettings} object, or an associative array
+     *           of retry settings parameters. See the documentation on {@see Google\GAX\RetrySettings}
      *           for example usage. Passing a value of null is equivalent to a value of
      *           ['retriesEnabled' => false]. Retry settings provided in this setting override the
      *           settings in $clientConfigPath.
@@ -373,9 +373,9 @@ class BigtableGapicClient
      *          Timeout to use for this call.
      * }
      *
-     * @return \Google\ApiCore\ServerStream
+     * @return \Google\GAX\ServerStream
      *
-     * @throws \Google\ApiCore\ApiException if the remote call fails
+     * @throws \Google\GAX\ApiException if the remote call fails
      * @experimental
      */
     public function readRows($tableName, $optionalArgs = [])
@@ -406,7 +406,7 @@ class BigtableGapicClient
             );
         }
         $mergedSettings = $defaultCallSettings->merge(new CallSettings($optionalArgs));
-        $callable = ApiCallable::createApiCall(
+        $callable = $this->createApiCallable(
             $this->bigtableStub,
             'ReadRows',
             $mergedSettings,
@@ -450,9 +450,9 @@ class BigtableGapicClient
      *          Timeout to use for this call.
      * }
      *
-     * @return \Google\ApiCore\ServerStream
+     * @return \Google\GAX\ServerStream
      *
-     * @throws \Google\ApiCore\ApiException if the remote call fails
+     * @throws \Google\GAX\ApiException if the remote call fails
      * @experimental
      */
     public function sampleRowKeys($tableName, $optionalArgs = [])
@@ -474,7 +474,7 @@ class BigtableGapicClient
             );
         }
         $mergedSettings = $defaultCallSettings->merge(new CallSettings($optionalArgs));
-        $callable = ApiCallable::createApiCall(
+        $callable = $this->createApiCallable(
             $this->bigtableStub,
             'SampleRowKeys',
             $mergedSettings,
@@ -514,16 +514,16 @@ class BigtableGapicClient
      * @param array      $optionalArgs {
      *                                 Optional.
      *
-     *     @type \Google\ApiCore\RetrySettings|array $retrySettings
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
      *          Retry settings to use for this call. Can be a
-     *          {@see Google\ApiCore\RetrySettings} object, or an associative array
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
      *          of retry settings parameters. See the documentation on
-     *          {@see Google\ApiCore\RetrySettings} for example usage.
+     *          {@see Google\GAX\RetrySettings} for example usage.
      * }
      *
-     * @return \Google\Cloud\Bigtable\V2\MutateRowResponse
+     * @return \Google\Bigtable\V2\MutateRowResponse
      *
-     * @throws \Google\ApiCore\ApiException if the remote call fails
+     * @throws \Google\GAX\ApiException if the remote call fails
      * @experimental
      */
     public function mutateRow($tableName, $rowKey, $mutations, $optionalArgs = [])
@@ -532,7 +532,6 @@ class BigtableGapicClient
         $request->setTableName($tableName);
         $request->setRowKey($rowKey);
         $request->setMutations($mutations);
-
         $defaultCallSettings = $this->defaultCallSettings['mutateRow'];
         if (isset($optionalArgs['retrySettings']) && is_array($optionalArgs['retrySettings'])) {
             $optionalArgs['retrySettings'] = $defaultCallSettings->getRetrySettings()->with(
@@ -540,7 +539,7 @@ class BigtableGapicClient
             );
         }
         $mergedSettings = $defaultCallSettings->merge(new CallSettings($optionalArgs));
-        $callable = ApiCallable::createApiCall(
+        $callable = $this->createApiCallable(
             $this->bigtableStub,
             'MutateRow',
             $mergedSettings,
@@ -587,9 +586,9 @@ class BigtableGapicClient
      *          Timeout to use for this call.
      * }
      *
-     * @return \Google\ApiCore\ServerStream
+     * @return \Google\GAX\ServerStream
      *
-     * @throws \Google\ApiCore\ApiException if the remote call fails
+     * @throws \Google\GAX\ApiException if the remote call fails
      * @experimental
      */
     public function mutateRows($tableName, $entries, $optionalArgs = [])
@@ -612,7 +611,7 @@ class BigtableGapicClient
             );
         }
         $mergedSettings = $defaultCallSettings->merge(new CallSettings($optionalArgs));
-        $callable = ApiCallable::createApiCall(
+        $callable = $this->createApiCallable(
             $this->bigtableStub,
             'MutateRows',
             $mergedSettings,
@@ -665,16 +664,16 @@ class BigtableGapicClient
      *          order, meaning that earlier mutations can be masked by later ones.
      *          Must contain at least one entry if `true_mutations` is empty, and at most
      *          100000.
-     *     @type \Google\ApiCore\RetrySettings|array $retrySettings
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
      *          Retry settings to use for this call. Can be a
-     *          {@see Google\ApiCore\RetrySettings} object, or an associative array
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
      *          of retry settings parameters. See the documentation on
-     *          {@see Google\ApiCore\RetrySettings} for example usage.
+     *          {@see Google\GAX\RetrySettings} for example usage.
      * }
      *
-     * @return \Google\Cloud\Bigtable\V2\CheckAndMutateRowResponse
+     * @return \Google\Bigtable\V2\CheckAndMutateRowResponse
      *
-     * @throws \Google\ApiCore\ApiException if the remote call fails
+     * @throws \Google\GAX\ApiException if the remote call fails
      * @experimental
      */
     public function checkAndMutateRow($tableName, $rowKey, $optionalArgs = [])
@@ -699,7 +698,7 @@ class BigtableGapicClient
             );
         }
         $mergedSettings = $defaultCallSettings->merge(new CallSettings($optionalArgs));
-        $callable = ApiCallable::createApiCall(
+        $callable = $this->createApiCallable(
             $this->bigtableStub,
             'CheckAndMutateRow',
             $mergedSettings,
@@ -743,16 +742,16 @@ class BigtableGapicClient
      * @param array                 $optionalArgs {
      *                                            Optional.
      *
-     *     @type \Google\ApiCore\RetrySettings|array $retrySettings
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
      *          Retry settings to use for this call. Can be a
-     *          {@see Google\ApiCore\RetrySettings} object, or an associative array
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
      *          of retry settings parameters. See the documentation on
-     *          {@see Google\ApiCore\RetrySettings} for example usage.
+     *          {@see Google\GAX\RetrySettings} for example usage.
      * }
      *
-     * @return \Google\Cloud\Bigtable\V2\ReadModifyWriteRowResponse
+     * @return \Google\Bigtable\V2\ReadModifyWriteRowResponse
      *
-     * @throws \Google\ApiCore\ApiException if the remote call fails
+     * @throws \Google\GAX\ApiException if the remote call fails
      * @experimental
      */
     public function readModifyWriteRow($tableName, $rowKey, $rules, $optionalArgs = [])
@@ -769,7 +768,7 @@ class BigtableGapicClient
             );
         }
         $mergedSettings = $defaultCallSettings->merge(new CallSettings($optionalArgs));
-        $callable = ApiCallable::createApiCall(
+        $callable = $this->createApiCallable(
             $this->bigtableStub,
             'ReadModifyWriteRow',
             $mergedSettings,
@@ -796,5 +795,14 @@ class BigtableGapicClient
     private function createCredentialsCallback()
     {
         return $this->grpcCredentialsHelper->createCallCredentialsCallback();
+    }
+
+    public function createApiCallable($bigtableStub,$operation,$mergedSettings,$descriptor){
+        return ApiCallable::createApiCall(
+            $bigtableStub,
+            $operation,
+            $mergedSettings,
+            $descriptor
+        );
     }
 }

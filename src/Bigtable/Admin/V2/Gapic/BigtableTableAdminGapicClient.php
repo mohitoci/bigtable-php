@@ -21,34 +21,34 @@
  * https://github.com/google/googleapis/blob/master/google/bigtable/admin/v2/bigtable_table_admin.proto
  * and updates to that file get reflected here through a refresh process.
  *
- * EXPERIMENTAL: this client library class has not yet been declared GA (1.0). This means that
- * even though we intent the surface to be stable, we may make backwards incompatible changes
- * if necessary.
+ * EXPERIMENTAL: this client library class has not yet been declared beta. This class may change
+ * more frequently than those which have been declared beta or 1.0, including changes which break
+ * backwards compatibility.
  *
  * @experimental
  */
 
 namespace Google\Cloud\Bigtable\Admin\V2\Gapic;
 
-use Google\ApiCore\AgentHeaderDescriptor;
-use Google\ApiCore\ApiCallable;
-use Google\ApiCore\CallSettings;
-use Google\ApiCore\GrpcCredentialsHelper;
-use Google\ApiCore\PageStreamingDescriptor;
-use Google\ApiCore\PathTemplate;
-use Google\ApiCore\ValidationException;
-use Google\Cloud\Bigtable\Admin\V2\BigtableTableAdminGrpcClient;
-use Google\Cloud\Bigtable\Admin\V2\CreateTableRequest;
-use Google\Cloud\Bigtable\Admin\V2\CreateTableRequest_Split as Split;
-use Google\Cloud\Bigtable\Admin\V2\DeleteTableRequest;
-use Google\Cloud\Bigtable\Admin\V2\DropRowRangeRequest;
-use Google\Cloud\Bigtable\Admin\V2\GetTableRequest;
-use Google\Cloud\Bigtable\Admin\V2\ListTablesRequest;
-use Google\Cloud\Bigtable\Admin\V2\ModifyColumnFamiliesRequest;
-use Google\Cloud\Bigtable\Admin\V2\ModifyColumnFamiliesRequest_Modification as Modification;
-use Google\Cloud\Bigtable\Admin\V2\Table;
-use Google\Cloud\Bigtable\Admin\V2\Table_View as View;
+use Google\Bigtable\Admin\V2\BigtableTableAdminGrpcClient;
+use Google\Bigtable\Admin\V2\CreateTableRequest;
+use Google\Bigtable\Admin\V2\CreateTableRequest_Split as Split;
+use Google\Bigtable\Admin\V2\DeleteTableRequest;
+use Google\Bigtable\Admin\V2\DropRowRangeRequest;
+use Google\Bigtable\Admin\V2\GetTableRequest;
+use Google\Bigtable\Admin\V2\ListTablesRequest;
+use Google\Bigtable\Admin\V2\ModifyColumnFamiliesRequest;
+use Google\Bigtable\Admin\V2\ModifyColumnFamiliesRequest_Modification as Modification;
+use Google\Bigtable\Admin\V2\Table;
+use Google\Bigtable\Admin\V2\Table_View as View;
 use Google\Cloud\Version;
+use Google\GAX\AgentHeaderDescriptor;
+use Google\GAX\ApiCallable;
+use Google\GAX\CallSettings;
+use Google\GAX\GrpcCredentialsHelper;
+use Google\GAX\PageStreamingDescriptor;
+use Google\GAX\PathTemplate;
+use Google\GAX\ValidationException;
 
 /**
  * Service Description: Service for creating, configuring, and deleting Cloud Bigtable tables.
@@ -57,9 +57,9 @@ use Google\Cloud\Version;
  * Provides access to the table schemas only, not the data stored within
  * the tables.
  *
- * EXPERIMENTAL: this client library class has not yet been declared GA (1.0). This means that
- * even though we intent the surface to be stable, we may make backwards incompatible changes
- * if necessary.
+ * EXPERIMENTAL: this client library class has not yet been declared beta. This class may change
+ * more frequently than those which have been declared beta or 1.0, including changes which break
+ * backwards compatibility.
  *
  * This class provides the ability to make remote calls to the backing service through method
  * calls that map to API methods. Sample code to get started:
@@ -291,8 +291,8 @@ class BigtableTableAdminGapicClient
      *     @type array $retryingOverride
      *           An associative array in which the keys are method names (e.g. 'createFoo'), and
      *           the values are retry settings to use for that method. The retry settings for each
-     *           method can be a {@see Google\ApiCore\RetrySettings} object, or an associative array
-     *           of retry settings parameters. See the documentation on {@see Google\ApiCore\RetrySettings}
+     *           method can be a {@see Google\GAX\RetrySettings} object, or an associative array
+     *           of retry settings parameters. See the documentation on {@see Google\GAX\RetrySettings}
      *           for example usage. Passing a value of null is equivalent to a value of
      *           ['retriesEnabled' => false]. Retry settings provided in this setting override the
      *           settings in $clientConfigPath.
@@ -413,16 +413,16 @@ class BigtableTableAdminGapicClient
      *              - Tablet 3 `[customer_1, customer_2) => {"customer_1"}.`
      *              - Tablet 4 `[customer_2, other)      => {"customer_2"}.`
      *              - Tablet 5 `[other, )                => {"other", "zz"}.`
-     *     @type \Google\ApiCore\RetrySettings|array $retrySettings
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
      *          Retry settings to use for this call. Can be a
-     *          {@see Google\ApiCore\RetrySettings} object, or an associative array
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
      *          of retry settings parameters. See the documentation on
-     *          {@see Google\ApiCore\RetrySettings} for example usage.
+     *          {@see Google\GAX\RetrySettings} for example usage.
      * }
      *
-     * @return \Google\Cloud\Bigtable\Admin\V2\Table
+     * @return \Google\Bigtable\Admin\V2\Table
      *
-     * @throws \Google\ApiCore\ApiException if the remote call fails
+     * @throws \Google\GAX\ApiException if the remote call fails
      * @experimental
      */
     public function createTable($parent, $tableId, $table, $optionalArgs = [])
@@ -489,22 +489,22 @@ class BigtableTableAdminGapicClient
      *     @type int $view
      *          The view to be applied to the returned tables' fields.
      *          Defaults to `NAME_ONLY` if unspecified; no others are currently supported.
-     *          For allowed values, use constants defined on {@see \Google\Cloud\Bigtable\Admin\V2\Table_View}
+     *          For allowed values, use constants defined on {@see \Google\Bigtable\Admin\V2\Table_View}
      *     @type string $pageToken
      *          A page token is used to specify a page of values to be returned.
      *          If no page token is specified (the default), the first page
      *          of values will be returned. Any page token used here must have
      *          been generated by a previous call to the API.
-     *     @type \Google\ApiCore\RetrySettings|array $retrySettings
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
      *          Retry settings to use for this call. Can be a
-     *          {@see Google\ApiCore\RetrySettings} object, or an associative array
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
      *          of retry settings parameters. See the documentation on
-     *          {@see Google\ApiCore\RetrySettings} for example usage.
+     *          {@see Google\GAX\RetrySettings} for example usage.
      * }
      *
-     * @return \Google\ApiCore\PagedListResponse
+     * @return \Google\GAX\PagedListResponse
      *
-     * @throws \Google\ApiCore\ApiException if the remote call fails
+     * @throws \Google\GAX\ApiException if the remote call fails
      * @experimental
      */
     public function listTables($parent, $optionalArgs = [])
@@ -561,17 +561,17 @@ class BigtableTableAdminGapicClient
      *     @type int $view
      *          The view to be applied to the returned table's fields.
      *          Defaults to `SCHEMA_VIEW` if unspecified.
-     *          For allowed values, use constants defined on {@see \Google\Cloud\Bigtable\Admin\V2\Table_View}
-     *     @type \Google\ApiCore\RetrySettings|array $retrySettings
+     *          For allowed values, use constants defined on {@see \Google\Bigtable\Admin\V2\Table_View}
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
      *          Retry settings to use for this call. Can be a
-     *          {@see Google\ApiCore\RetrySettings} object, or an associative array
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
      *          of retry settings parameters. See the documentation on
-     *          {@see Google\ApiCore\RetrySettings} for example usage.
+     *          {@see Google\GAX\RetrySettings} for example usage.
      * }
      *
-     * @return \Google\Cloud\Bigtable\Admin\V2\Table
+     * @return \Google\Bigtable\Admin\V2\Table
      *
-     * @throws \Google\ApiCore\ApiException if the remote call fails
+     * @throws \Google\GAX\ApiException if the remote call fails
      * @experimental
      */
     public function getTable($name, $optionalArgs = [])
@@ -622,14 +622,14 @@ class BigtableTableAdminGapicClient
      * @param array  $optionalArgs {
      *                             Optional.
      *
-     *     @type \Google\ApiCore\RetrySettings|array $retrySettings
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
      *          Retry settings to use for this call. Can be a
-     *          {@see Google\ApiCore\RetrySettings} object, or an associative array
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
      *          of retry settings parameters. See the documentation on
-     *          {@see Google\ApiCore\RetrySettings} for example usage.
+     *          {@see Google\GAX\RetrySettings} for example usage.
      * }
      *
-     * @throws \Google\ApiCore\ApiException if the remote call fails
+     * @throws \Google\GAX\ApiException if the remote call fails
      * @experimental
      */
     public function deleteTable($name, $optionalArgs = [])
@@ -685,16 +685,16 @@ class BigtableTableAdminGapicClient
      * @param array          $optionalArgs  {
      *                                      Optional.
      *
-     *     @type \Google\ApiCore\RetrySettings|array $retrySettings
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
      *          Retry settings to use for this call. Can be a
-     *          {@see Google\ApiCore\RetrySettings} object, or an associative array
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
      *          of retry settings parameters. See the documentation on
-     *          {@see Google\ApiCore\RetrySettings} for example usage.
+     *          {@see Google\GAX\RetrySettings} for example usage.
      * }
      *
-     * @return \Google\Cloud\Bigtable\Admin\V2\Table
+     * @return \Google\Bigtable\Admin\V2\Table
      *
-     * @throws \Google\ApiCore\ApiException if the remote call fails
+     * @throws \Google\GAX\ApiException if the remote call fails
      * @experimental
      */
     public function modifyColumnFamilies($name, $modifications, $optionalArgs = [])
@@ -750,14 +750,14 @@ class BigtableTableAdminGapicClient
      *          zero length.
      *     @type bool $deleteAllDataFromTable
      *          Delete all rows in the table. Setting this to false is a no-op.
-     *     @type \Google\ApiCore\RetrySettings|array $retrySettings
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
      *          Retry settings to use for this call. Can be a
-     *          {@see Google\ApiCore\RetrySettings} object, or an associative array
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
      *          of retry settings parameters. See the documentation on
-     *          {@see Google\ApiCore\RetrySettings} for example usage.
+     *          {@see Google\GAX\RetrySettings} for example usage.
      * }
      *
-     * @throws \Google\ApiCore\ApiException if the remote call fails
+     * @throws \Google\GAX\ApiException if the remote call fails
      * @experimental
      */
     public function dropRowRange($name, $optionalArgs = [])

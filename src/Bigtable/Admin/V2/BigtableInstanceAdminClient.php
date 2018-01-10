@@ -21,9 +21,9 @@
  * https://github.com/google/googleapis/blob/master/google/bigtable/admin/v2/bigtable_instance_admin.proto
  * and updates to that file get reflected here through a refresh process.
  *
- * EXPERIMENTAL: this client library class has not yet been declared GA (1.0). This means that
- * even though we intent the surface to be stable, we may make backwards incompatible changes
- * if necessary.
+ * EXPERIMENTAL: this client library class has not yet been declared beta. This class may change
+ * more frequently than those which have been declared beta or 1.0, including changes which break
+ * backwards compatibility.
  *
  * @experimental
  */
@@ -37,6 +37,5 @@ use Google\Cloud\Bigtable\Admin\V2\Gapic\BigtableInstanceAdminGapicClient;
  */
 class BigtableInstanceAdminClient extends BigtableInstanceAdminGapicClient
 {
-    // This class is intentionally empty, and is intended to hold manual
-    // additions to the generated {@see BigtableInstanceAdminClientImpl} class.
+    // This class is intentionally empty, and is intended to hold manual additions to the generated {@see BigtableInstanceAdminClientImpl} class.
 }
