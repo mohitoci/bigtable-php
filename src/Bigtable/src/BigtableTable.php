@@ -277,7 +277,7 @@ class BigtableTable
 		$index = 0;
 		for ($k = 0; $k < $interations; $k++){ //iterations
 			$entries = [];
-			for ($j = 0; $j < 1000; $j++) { //batch_size
+			for ($j = 0; $j < $batch_size; $j++) { //batch_size
 				$rowKey = sprintf($rowKey.'%07d', $index);
 				$MutationArray = [];
 				for ($i = 0; $i < 10; $i++) {
