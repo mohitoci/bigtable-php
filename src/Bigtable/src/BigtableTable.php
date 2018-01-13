@@ -329,12 +329,14 @@ class BigtableTable
 	 * @param string $table         The unique name of the table whose families should be modified.
 	 *                              Values are of the form
 	 *                              `projects/<project>/instances/<instance>/tables/<table>`.
-	 * @param string $rowKey       The key of the row to which the mutation should be applied.
-	 *
+	 * @param string $rowKey_pref    The key of the row to which the mutation should be applied.
+	 * 
+	 * @param string $cf			Column family name pref
+	 * 
 	 * @param array  $optionalArgs {
 	 *                             Optional.
 	 *
-	 * @return \Google\Bigtable\V2\MutateRowResponse
+	 * @return array
 	 *
 	 * @throws \Google\GAX\ApiException if the remote call fails
 	 */
