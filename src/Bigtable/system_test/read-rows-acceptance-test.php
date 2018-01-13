@@ -20,7 +20,6 @@ use PHPUnit\Framework\TestCase;
 /**
  *
  */
-
 class ReadRowsAcceptanceTest extends TestCase {
 
 	private $flatRows = [];
