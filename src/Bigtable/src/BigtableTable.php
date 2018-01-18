@@ -15,15 +15,11 @@ use Google\Bigtable\V2\MutateRowsRequest_Entry;
 use Google\Bigtable\V2\ReadModifyWriteRule;
 
 use Google\Cloud\Bigtable\V2\BigtableClient;
-//use Google\Cloud\Bigtable\V2\Gapic\BigtableGapicClient;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\MapField;
 
-
 use Google\GAX\ValidationException;
-
-use Google\Bigtable\V2\RowFilter_Condition;
 
 /**
  *
@@ -101,22 +97,27 @@ class BigtableTable
 			$table                    = new Table();
 			$table->setGranularity(3);
 
-			$gc = new GcRule();
-			$gc->setMaxNumVersions(3);
-
-			$cf = new ColumnFamily();
-			$cf->setGcRule($gc);
-
-			$arr                = new MapField(GPBType::STRING, GPBType::MESSAGE, ColumnFamily::class );
-			$arr[$columnFamily] = $cf;
-
-			$table->setColumnFamilies($arr);
+			$MapField = $this->columnFamily(3, $columnFamily);
+			$table->setColumnFamilies($MapField);
 			$response = $bigtableTableAdminClient->createTable($parent, $tableId, $table, $optionalArgs);
 			return $response;
 		}
 		finally{
 			$bigtableTableAdminClient->close();
 		}
+	}
+
+	public function columnFamily($MaxNumVersions, $columnFamily)
+	{
+		$gc = new GcRule();
+		$gc->setMaxNumVersions($MaxNumVersions);
+
+		$cf = new ColumnFamily();
+		$cf->setGcRule($gc);
+
+		$MapField = new MapField(GPBType::STRING, GPBType::MESSAGE, ColumnFamily::class );
+		$MapField[$columnFamily] = $cf;
+		return $MapField;
 	}
 
 	/**
@@ -272,9 +273,12 @@ class BigtableTable
 		}
 		$interations = $total_row / $batch_size;
 		
+		$hdr = hdr_init(1, 3600000, 3);
+
 		$allEntries = [];
 		$MutateRowsRequest = [];
-		$index = 0;
+		$index = 0;		
+		$processStartTime = round(microtime(true) * 1000);
 		for ($k = 0; $k < $interations; $k++){ //iterations
 			$entries = [];
 			for ($j = 0; $j < $batch_size; $j++) { //batch_size
@@ -286,7 +290,7 @@ class BigtableTable
 					$value = 
 					$cell['cf'] = 'cf';
 					$cell['qualifier'] = 'field'.$i;
-					$cell['value'] = $this->generateRandomString(100);
+					$cell['value'] = 'VAL_'.$i; //$this->generateRandomString(100);
 					$cell['timestamp'] = $utc*1000;
 					$MutationArray[$i] = $this->mutationCell($cell);
 				}
@@ -298,10 +302,17 @@ class BigtableTable
 				$index++;
 			}
 			$MutateRowsRequest = array_merge($MutateRowsRequest, $entries);
+
+			$startTime = round(microtime(true) * 1000);
+
 			$BigtableClient = new BigtableClient();
 			$ServerStream = $BigtableClient->mutateRows($table, $entries, $optionalArgs);
+			$endTime = round(microtime(true) * 1000) - $startTime;
+			hdr_record_value($hdr, $endTime);
 			$allEntries[] = $ServerStream;
 		}
+		$time_elapsed_secs = round(microtime(true) * 1000) - $processStartTime;
+		
 		$success = 0;
 		$failure = 0;
 		$MutateRowsIndex = 0;
@@ -312,14 +323,33 @@ class BigtableTable
 				// echo "<br> Index = ".$MutateRowsIndex;// $Iterator->getIndex();
 				$status = $Iterator->getStatus();
 				$code = $status->getCode();
-				// echo "    code = ". $code;
 				if($code == 0) $success++;
 				else if($code == 1) $failure++;
 
 				$MutateRowsIndex++;
 			}
 		}
-		$response = ['Success' => $success, 'failure' => $failure];
+		// $response = ['Success' => $success, 'failure' => $failure];
+		$min = hdr_min($hdr);
+		$max = hdr_max($hdr);
+		$total = $success + $failure;
+		$throughput = round($total/$time_elapsed_secs, 4);		
+		$response = [
+			'operation_name' => 'Data Load',
+			'run_time' => $time_elapsed_secs,
+			'mix_latency' => $max / 100,
+			'min_latency' => $min / 100,
+			'oprations' => $total,
+			'throughput' => $throughput,
+			'p50_latency' => hdr_value_at_percentile($hdr, 50),
+			'p75_latency' => hdr_value_at_percentile($hdr, 75),
+			'p90_latency' => hdr_value_at_percentile($hdr, 90),
+			'p95_latency' => hdr_value_at_percentile($hdr, 95),			
+			'p99_latency' => hdr_value_at_percentile($hdr, 99),
+			'p99.99_latency' => hdr_value_at_percentile($hdr, 99.99),
+			'success_operations' => $success,
+			'failed_operations' => $failure
+		];
 		return $response;
 	}
 
@@ -343,16 +373,31 @@ class BigtableTable
 	public function randomReadWrite($table, $rowKey_pref, $cf, $optionalArgs = [])
 	{
 		$total_row = (isset($optionalArgs['total_row'])) ?  $optionalArgs['total_row'] : 10000000;
-		$interations = (isset($optionalArgs['interations'])) ?  $optionalArgs['interations'] : 100;
+		$total_operations = (isset($optionalArgs['interations'])) ?  $optionalArgs['total_operations'] : 100;
+		
 		$readRowsTotal = ['success' => [], 'failure' => []];
 		$writeRowsTotal = ['success' => [], 'failure' => []];
-		for($i=0; $i < $interations; $i++){
+		$hdr_read = hdr_init(1, 3600000, 3);
+		$hdr_write = hdr_init(1, 3600000, 3);
+		
+		$operation_start = round(microtime(true) * 1000);
+		$read_oprations_total_time = 0;
+		$write_oprations_total_time = 0;
+		// echo $time1 = date("h:i:s");
+		// $currentTimestemp = new DateTime($time1);
+
+		// $time2 = date(" h:i:s", time() + 30);
+		// $after30Sec = new DateTime($time2);
+		// $i = 0;
+		// while($currentTimestemp < $after30Sec){
+		for($i=0; $i < $total_operations; $i++){
 			$random = mt_rand(0, $total_row);
 			$randomRowKey = sprintf($rowKey_pref.'%07d', $random);
 			if($i % 2 == 0){
-				$start = microtime(true);
+				$start = round(microtime(true) * 1000);
 				$res = $this->readRows($table, [$randomRowKey]);
-				$time_elapsed_secs = microtime(true) - $start;
+				$time_elapsed_secs = round(microtime(true) * 1000) - $start;
+				hdr_record_value($hdr_read, $time_elapsed_secs);
 				
 				if(count($res) ){
 					$readRowsTotal['success'][] = ['rowKey' => $randomRowKey, 'microseconds' => $time_elapsed_secs];
@@ -360,6 +405,8 @@ class BigtableTable
 				else{
 					$readRowsTotal['failure'][] = ['rowKey' => $randomRowKey, 'microseconds' => $time_elapsed_secs];
 				}
+
+				$read_oprations_total_time += $time_elapsed_secs;
 			}
 			else{
 				$value = $this->generateRandomString(100);
@@ -368,13 +415,73 @@ class BigtableTable
 				$cell['value'] = $value;
 				$cell['qualifier'] = 'field0'; //Specify qualifier (optional)
 
-				$start = microtime(true);
+				$start = round(microtime(true) * 1000);
 				$res = $this->mutateRow($table, $randomRowKey, [$this->mutationCell($cell)]);
-				$time_elapsed_secs = microtime(true) - $start;
+				$time_elapsed_secs = round(microtime(true) * 1000) - $start;
+				hdr_record_value($hdr_write, $time_elapsed_secs);
 				$writeRowsTotal['success'][] = ['rowKey' => $randomRowKey, 'microseconds' => $time_elapsed_secs];				
+				
+				$write_oprations_total_time += $time_elapsed_secs;
 			}
+			// $i++;
+			// $currentTimestemp = new DateTime(date("h:i:s"));
 		}
-		return(['readRowsTotal' => $readRowsTotal, 'writeRowsTotal' => $writeRowsTotal]);
+		// echo date("h:i:s");
+		$total_runtime = round(microtime(true) * 1000) - $operation_start;
+		//$throughput = $total_operations/$total_runtime;
+
+		//Read operations
+		$min_read = hdr_min($hdr_read);
+		$max_read = hdr_max($hdr_read);
+		$total_read = count($readRowsTotal['success']) + count($readRowsTotal['failure']);
+		$readThroughput = round($total_read/$read_oprations_total_time, 4);
+		$readOperations = [
+			'operation_name' => 'Random Read',
+			'run_time' => $read_oprations_total_time,
+			'mix_latency' => $max_read / 100,
+			'min_latency' => $min_read / 100,
+			'oprations' => $total_read,
+			'throughput' => $readThroughput,
+			'p50_latency' => hdr_value_at_percentile($hdr_read, 50),
+			'p75_latency' => hdr_value_at_percentile($hdr_read, 75),
+			'p90_latency' => hdr_value_at_percentile($hdr_read, 90),
+			'p95_latency' => hdr_value_at_percentile($hdr_read, 95),			
+			'p99_latency' => hdr_value_at_percentile($hdr_read, 99),
+			'p99.99_latency' => hdr_value_at_percentile($hdr_read, 99.99),
+			'success_operations' => count($readRowsTotal['success']),
+			'failed_operations' => count($readRowsTotal['failure'])
+		];
+
+		// echo "\n readOperations";
+		// print_r($readOperations);
+
+		//Write Operations
+		$min_write = hdr_min($hdr_write);
+		$max_write = hdr_max($hdr_write);
+		$total_write = count($writeRowsTotal['success']) + count($writeRowsTotal['failure']);
+		$writeThroughput = round($total_write/$write_oprations_total_time, 4);
+		$writeOperations = [
+			'operation_name' => 'Random Write',
+			'run_time' => $write_oprations_total_time,
+			'mix_latency' => $max_write / 100,
+			'min_latency' => $min_write / 100,
+			'oprations' => $total_write,
+			'throughput' => $writeThroughput,
+			'p50_latency' => hdr_value_at_percentile($hdr_write, 50),
+			'p75_latency' => hdr_value_at_percentile($hdr_write, 75),
+			'p90_latency' => hdr_value_at_percentile($hdr_write, 90),
+			'p95_latency' => hdr_value_at_percentile($hdr_write, 95),			
+			'p99_latency' => hdr_value_at_percentile($hdr_write, 99),
+			'p99.99_latency' => hdr_value_at_percentile($hdr_write, 99.99),
+			'success_operations' => count($writeRowsTotal['success']),
+			'failed_operations' => count($writeRowsTotal['failure'])
+		];
+		
+		// echo "\n writeOperations";
+		// print_r($writeOperations);
+		return(['readOperations' => $readOperations, 'writeOperations' => $writeOperations]);
+		die;
+		// return(['readRowsTotal' => $readRowsTotal, 'writeRowsTotal' => $writeRowsTotal]);
 	}
 
 	public function mutateRow($table, $rowKey, $cell)
@@ -386,7 +493,6 @@ class BigtableTable
 
 	public function checkAndMutateRow($tableName, $rowKey, $optionalArgs = [])
 	{
-		
 		$cell['cf'] = 'cf';
 		$cell['value'] = '678';//$value;
 		$cell['qualifier'] = 'field0';
