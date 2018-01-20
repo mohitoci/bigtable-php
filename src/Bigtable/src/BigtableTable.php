@@ -61,14 +61,9 @@ class BigtableTable
 	 * @return \Google\Bigtable\Admin\V2\Table
 	 */
 	public function createTable($parent, $tableId, $optionalArgs = []) {
-		try {
-			$table                    = new Table();
-			$response                 = $this->BigtableTableAdminClient->createTable($parent, $tableId, $table, $optionalArgs);
-			return $response;
-		}
-		finally{
-			$this->BigtableTableAdminClient->close();
-		}
+		$Table = new Table();
+		$table = $this->BigtableTableAdminClient->createTable($parent, $tableId, $Table, $optionalArgs);
+		return $table;
 	}
 
 	/**
@@ -96,18 +91,13 @@ class BigtableTable
 	 * @return \Google\Bigtable\Admin\V2\Table
 	 */
 	public function createTableWithColumnFamily($parent, $tableId, $columnFamily, $optionalArgs = []) {
-		try {
-			$table = new Table();
-			$table->setGranularity(3);
+		$table = new Table();
+		$table->setGranularity(3);
 
-			$MapField = $this->columnFamily(3, $columnFamily);
-			$table->setColumnFamilies($MapField);
-			$response = $this->BigtableTableAdminClient->createTable($parent, $tableId, $table, $optionalArgs);
-			return $response;
-		}
-		finally{
-			$this->BigtableTableAdminClient->close();
-		}
+		$MapField = $this->columnFamily(3, $columnFamily);
+		$table->setColumnFamilies($MapField);
+		$table = $this->BigtableTableAdminClient->createTable($parent, $tableId, $table, $optionalArgs);
+		return $table;
 	}
 
 	/**
@@ -142,11 +132,7 @@ class BigtableTable
 	 * @throws \Google\GAX\ApiException if the remote call fails
 	 */
 	public function deleteTable($table, $optionalArgs = []) {
-		try {
-			return $this->BigtableTableAdminClient->deleteTable($table);
-		}finally{
-			$this->BigtableTableAdminClient->close();
-		}
+		return $this->BigtableTableAdminClient->deleteTable($table);
 	}
 
 	/**
@@ -160,13 +146,8 @@ class BigtableTable
 	 * @return \Google\GAX\PagedListResponse
 	 */
 	public function listTables($parent, $optionalArgs = []) {
-		try {
-			$PagedListResponse = $this->BigtableTableAdminClient->listTables($parent, $optionalArgs);
-			return $PagedListResponse;
-		}
-		finally{
-			$this->BigtableTableAdminClient->close();
-		}
+		$PagedListResponse = $this->BigtableTableAdminClient->listTables($parent, $optionalArgs);
+		return $PagedListResponse;
 	}
 
 	/**
@@ -298,9 +279,9 @@ class BigtableTable
      *
      * @throws \Google\GAX\ApiException if the remote call fails
      */
-	public function mutateRow($table, $rowKey, $mutations)
+	public function mutateRow($tableName, $rowKey, $mutations)
 	{
-		$MutateRowResponse = $this->BigtableClient->mutateRow($table, $rowKey, $mutations);
+		$MutateRowResponse = $this->BigtableClient->mutateRow($tableName, $rowKey, $mutations);
 		return $MutateRowResponse;
 	}
 
