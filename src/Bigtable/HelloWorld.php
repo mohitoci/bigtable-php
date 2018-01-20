@@ -4,7 +4,6 @@ require 'vendor/autoload.php';
 putenv('GOOGLE_APPLICATION_CREDENTIALS=Grass_Clump_479-b5c624400920.json');
 
 use Google\Cloud\Bigtable\src\BigtableTable;
-use Google\Cloud\Bigtable\Admin\V2\BigtableTableAdminClient;
 
 /**
  * A minimal application that connects to Cloud Bigtable using the native HBase API
