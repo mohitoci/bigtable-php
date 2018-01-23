@@ -18,7 +18,8 @@ class BigtableInstance
 	public function __construct()
 	{
 		$this->BigtableInstanceAdminClient = new BigtableInstanceAdminClient();
-	}
+    }
+    
 	/**
      * Formats a string containing the fully-qualified path to represent
      * a project resource.
@@ -85,7 +86,7 @@ class BigtableInstance
 			$MapField = new MapField(GPBType::STRING,GPBType::MESSAGE, Cluster::class);
 			$MapField[$clusterId] = $clusters;
 
-			$OperationResponse = $this->BigtableInstanceAdminClient->createInstance($parent, $instanceId, $instance, $MapField, []);
+			$OperationResponse = $this->BigtableInstanceAdminClient->createInstance($parent, $instanceId, $instance, $MapField, $optionalArgs);
 			return $OperationResponse;
 	    }
 	    finally {
@@ -176,6 +177,6 @@ class BigtableInstance
 	    finally {
 	    	$this->BigtableInstanceAdminClient->close();
 	    }
-	}
+    }
 }
 ?>

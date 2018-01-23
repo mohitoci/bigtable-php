@@ -45,7 +45,8 @@ class BigtableTable
 	 *
 	 * @return string The formatted instance resource.
 	 */
-	public static function instanceName($projectId, $instanceId) {
+	public static function instanceName($projectId, $instanceId)
+	{
 		$formattedParent = BigtableTableAdminClient::instanceName($projectId, $instanceId);
 		return $formattedParent;
 	}
@@ -60,7 +61,8 @@ class BigtableTable
 	 *                             Optional.
 	 * @return \Google\Bigtable\Admin\V2\Table
 	 */
-	public function createTable($parent, $tableId, $optionalArgs = []) {
+	public function createTable($parent, $tableId, $optionalArgs = [])
+	{
 		$Table = new Table();
 		$table = $this->BigtableTableAdminClient->createTable($parent, $tableId, $Table, $optionalArgs);
 		return $table;
@@ -75,7 +77,8 @@ class BigtableTable
 	 *
 	 * @return string The formatted table resource.
 	 */
-	public static function tableName($projectId, $instanceId, $table) {
+	public static function tableName($projectId, $instanceId, $table)
+	{
 		return BigtableTableAdminClient::tableName($projectId, $instanceId, $table);
 	}
 
@@ -90,7 +93,8 @@ class BigtableTable
 	 *                             Optional.
 	 * @return \Google\Bigtable\Admin\V2\Table
 	 */
-	public function createTableWithColumnFamily($parent, $tableId, $columnFamily, $optionalArgs = []) {
+	public function createTableWithColumnFamily($parent, $tableId, $columnFamily, $optionalArgs = [])
+	{
 		$table = new Table();
 		$table->setGranularity(3);
 
