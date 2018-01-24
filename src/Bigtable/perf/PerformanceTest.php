@@ -1,4 +1,6 @@
 <?php
+require '../vendor/autoload.php';
+putenv('GOOGLE_APPLICATION_CREDENTIALS=../Grass_Clump_479-b5c624400920.json');
 
 use Google\Cloud\Bigtable\src\BigtableTable;
 
@@ -111,7 +113,7 @@ class PerformanceTest {
 		echo 'Satrt Time '.$time1;
 		$currentTimestemp = new DateTime($time1);
 
-		$time2      = date(" h:i:s", time()+60*30);//sec
+		$time2      = date(" h:i:s", time()+ 30);//sec 
 		$after30Sec = new DateTime($time2);
 		$i          = 0;
 		while ($currentTimestemp < $after30Sec) {
@@ -137,17 +139,31 @@ class PerformanceTest {
 				$cell['qualifier'] = 'field0';//Specify qualifier (optional)
 
 				$mutationCell = $this->BigtableTable->mutationCell($cell);
-				$res          = $this->BigtableTable->mutateRow($table, $randomRowKey, [$mutationCell]);
+				$this->BigtableTable->mutateRow($table, $randomRowKey, [$mutationCell]);
+				$row = $this->BigtableTable->readRows($table, [$randomRowKey]);
 
-				$time_elapsed_secs           = round(microtime(true)*1000)-$start;
-				$writeRowsTotal['success'][] = ['rowKey' => $randomRowKey, 'microseconds' => $time_elapsed_secs];
+				$flag = false;
+				$cells = $row[0]->getCells();
+				foreach($cells as $val){
+					if($val->getValue() == $value){
+						$flag = true;
+						break;
+					}
+				}
+				$time_elapsed_secs = round(microtime(true) * 1000) - $start;
+				if($flag){
+					$writeRowsTotal['success'][] = ['rowKey' => $randomRowKey, 'microseconds' => $time_elapsed_secs];
+				}
+				else{
+					$writeRowsTotal['failure'][] = ['rowKey' => $randomRowKey, 'microseconds' => $time_elapsed_secs];
+				}
 				$write_oprations_total_time += $time_elapsed_secs;
 				hdr_record_value($hdr_write, $time_elapsed_secs);
 			}
 			$i++;
 			$currentTimestemp = new DateTime(date("h:i:s"));
 		}
-		echo '\n end Time'.date("h:i:s");
+		echo "\nend Time ".date("h:i:s");
 		$total_runtime = round(microtime(true)*1000)-$operation_start;
 		//$throughput = $total_operations/$total_runtime;
 
@@ -221,16 +237,17 @@ $instanceId = "php-perf";
 $tableName  = BigtableTable::tableName($projectId, $instanceId, 'test123');
 
 //Insert record
-$options         = ['total_row' => 10000, 'batch_size' => 100];
-$rowKey_pref     = 'test';
+$totalRows = 10000;
+$batchSize = 1000;
+$options         = ['total_row' => $totalRows, 'batch_size' => $batchSize];
+$rowKey_pref     = 'perf';
 $columnFamily    = 'cf';
+echo $options['total_row']." loading rows ... \n";
 $PerformanceTest = new PerformanceTest();
 $inserted        = $PerformanceTest->insertRecord($tableName, $rowKey_pref, $columnFamily, $options);
 
 //Random read row
-$options         = ['total_row' => 1000, 'total_operations' => 20];
-$rowKey_pref     = 'test';
-$columnFamily    = 'cf';
+$options         = ['total_row' => $totalRows];
 $randomReadWrite = $PerformanceTest->randomReadWrite($tableName, $rowKey_pref, $columnFamily, $options);
 
 $info = array(
@@ -243,7 +260,7 @@ $info = array(
 	'',
 );
 
-$filepath = 'reports_latency_test.csv';
+$filepath = 'reports_latency_test_'.date("h_i_s").'.csv';
 header('Content-Type: application/excel');
 header('Content-Disposition: attachment; filename="'.$filepath.'"');
 $fp = fopen($filepath, "w");
@@ -259,5 +276,5 @@ fputcsv($fp, array_values($randomReadWrite['readOperations']));
 fputcsv($fp, array_values($randomReadWrite['writeOperations']));
 fclose($fp);
 
-echo "\n File generated ".$filepath;
+echo "\nFile generated ".$filepath;
 echo "\n";
