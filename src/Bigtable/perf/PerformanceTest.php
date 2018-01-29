@@ -1,6 +1,6 @@
 <?php
 require '../vendor/autoload.php';
-putenv('GOOGLE_APPLICATION_CREDENTIALS=../Grass_Clump_479-b5c624400920.json');
+//putenv('GOOGLE_APPLICATION_CREDENTIALS=../Grass_Clump_479-b5c624400920.json');
 
 use Google\Cloud\Bigtable\src\BigtableTable;
 
@@ -22,9 +22,9 @@ class PerformanceTest {
 
 		$hdr = hdr_init(1, 3600000, 3);
 
-		$allEntries        = [];
-		$MutateRowsRequest = [];
 		$index             = 0;
+		$success         = 0;
+		$failure         = 0;
 		$processStartTime  = round(microtime(true)*1000);
 		for ($k = 0; $k < $interations; $k++) {//iterations
 			$entries = [];
@@ -44,21 +44,13 @@ class PerformanceTest {
 				$entries[$index] = $this->BigtableTable->mutateRowsRequest($rowKey, $MutationArray);
 				$index++;
 			}
-			$MutateRowsRequest = array_merge($MutateRowsRequest, $entries);
 
 			$startTime    = round(microtime(true)*1000);
-			$ServerStream = $this->BigtableTable->mutateRows($table, $entries);
+			$ServerStream = $this->BigtableTable->mutateRows($table, $entries, $optionalArgs);
 			$endTime      = round(microtime(true)*1000)-$startTime;
+echo "\n preocess time for mutateRows " .$index. " is " .$endTime;
 			hdr_record_value($hdr, $endTime);
-			$allEntries[] = $ServerStream;
-		}
-		$time_elapsed_secs = round(microtime(true)*1000)-$processStartTime;
-
-		$success         = 0;
-		$failure         = 0;
-		$MutateRowsIndex = 0;
-		foreach ($allEntries as $chunkFormatter) {
-			$current = $chunkFormatter->readAll()->current();
+			$current = $ServerStream->readAll()->current();
 			$Entries = $current->getEntries();
 			foreach ($Entries->getIterator() as $Iterator) {
 				// echo "<br> Index = ".$MutateRowsIndex;
@@ -68,14 +60,31 @@ class PerformanceTest {
 				if ($code == 0) {$success++;
 				} else if ($code == 1) {$failure++;
 				}
-
-				$MutateRowsIndex++;
 			}
 		}
+		$time_elapsed_secs = round(microtime(true)*1000)-$processStartTime;
+echo"\nTotal time in milli sec ".$time_elapsed_secs;
+		
+		// $MutateRowsIndex = 0;
+		// foreach ($allEntries as $chunkFormatter) {
+		// 	$current = $chunkFormatter->readAll()->current();
+		// 	$Entries = $current->getEntries();
+		// 	foreach ($Entries->getIterator() as $Iterator) {
+		// 		// echo "<br> Index = ".$MutateRowsIndex;
+		// 		// $Iterator->getIndex();
+		// 		$status = $Iterator->getStatus();
+		// 		$code   = $status->getCode();
+		// 		if ($code == 0) {$success++;
+		// 		} else if ($code == 1) {$failure++;
+		// 		}
+
+		// 		$MutateRowsIndex++;
+		// 	}
+		// }
 		// $response = ['Success' => $success, 'failure' => $failure];
 		$min           = hdr_min($hdr);
 		$max           = hdr_max($hdr);
-		$total         = $success+$failure;
+		$total         = $index;	//$success+$failure;
 		$throughput    = round($total/$time_elapsed_secs, 4);
 		$statesticData = [
 			'operation_name'     => 'Data Load',
@@ -96,7 +105,7 @@ class PerformanceTest {
 		return $statesticData;
 	}
 
-	public function randomReadWrite($table, $rowKey_pref, $cf, $optionalArgs = []) {
+	public function randomReadWrite($table, $rowKey_pref, $cf, $optionalArgs) {
 		$total_row        = (isset($optionalArgs['total_row']))?$optionalArgs['total_row']:10000000;
 		$total_operations = (isset($optionalArgs['interations']))?$optionalArgs['total_operations']:100;
 
@@ -113,7 +122,7 @@ class PerformanceTest {
 		echo 'Satrt Time '.$time1;
 		$currentTimestemp = new DateTime($time1);
 
-		$time2      = date(" h:i:s", time()+ 30);//sec 
+		$time2      = date(" h:i:s", time()+ $optionalArgs['timeoutsec']);//sec
 		$after30Sec = new DateTime($time2);
 		$i          = 0;
 		while ($currentTimestemp < $after30Sec) {
@@ -223,6 +232,10 @@ class PerformanceTest {
 	 */
 	public function generateRandomString($length = 10) {
 		$characters       = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+
+
+
 		$charactersLength = strlen($characters);
 		$randomString     = '';
 		for ($i = 0; $i < $length; $i++) {
@@ -234,20 +247,23 @@ class PerformanceTest {
 
 $projectId  = "grass-clump-479";
 $instanceId = "php-perf";
-$tableName  = BigtableTable::tableName($projectId, $instanceId, 'test123');
+$table = "test123";
+$tableName  = BigtableTable::tableName($projectId, $instanceId, $table);
 
 //Insert record
-$totalRows = 10000;
-$batchSize = 1000;
-$options         = ['total_row' => $totalRows, 'batch_size' => $batchSize];
-$rowKey_pref     = 'perf';
+$totalRows = 10000000;
+$batchSize = 10000;
+$timeoutMillis = 6*60*60000; //60000 = 60 sec
+$options         = ['total_row' => $totalRows, 'batch_size' => $batchSize, 'timeoutMillis' => $timeoutMillis];
+$rowKey_pref     = 'keyz';
 $columnFamily    = 'cf';
 echo $options['total_row']." loading rows ... \n";
 $PerformanceTest = new PerformanceTest();
 $inserted        = $PerformanceTest->insertRecord($tableName, $rowKey_pref, $columnFamily, $options);
 
 //Random read row
-$options         = ['total_row' => $totalRows];
+$timeoutsec = 30*60; //sec
+$options         = ['total_row' => $totalRows, 'timeoutsec' => $timeoutsec];
 $randomReadWrite = $PerformanceTest->randomReadWrite($tableName, $rowKey_pref, $columnFamily, $options);
 
 $info = array(
@@ -278,3 +294,4 @@ fclose($fp);
 
 echo "\nFile generated ".$filepath;
 echo "\n";
+?>

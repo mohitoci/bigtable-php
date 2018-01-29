@@ -45,7 +45,7 @@ class BigtableTable
 	 *
 	 * @return string The formatted instance resource.
 	 */
-	public static function instanceName($projectId, $instanceId)
+	public function instanceName($projectId, $instanceId)
 	{
 		$formattedParent = BigtableTableAdminClient::instanceName($projectId, $instanceId);
 		return $formattedParent;
@@ -77,7 +77,7 @@ class BigtableTable
 	 *
 	 * @return string The formatted table resource.
 	 */
-	public static function tableName($projectId, $instanceId, $table)
+	public function tableName($projectId, $instanceId, $table)
 	{
 		return BigtableTableAdminClient::tableName($projectId, $instanceId, $table);
 	}
