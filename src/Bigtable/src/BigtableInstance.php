@@ -24,12 +24,11 @@ class BigtableInstance
      * Formats a string containing the fully-qualified path to represent
      * a project resource.
      *
-     * @param string $project
+     * @param string $projectId
      *
      * @return string The formatted project resource.
-     * @experimental
      */
-	public static function projectName($projectId)
+	public function projectName($projectId)
 	{
 		$formattedParent = BigtableInstanceAdminClient::projectName($projectId);
 		return $formattedParent;
@@ -39,13 +38,13 @@ class BigtableInstance
      * Formats a string containing the fully-qualified path to represent
      * a instance resource.
      *
-     * @param string $project Optional
-     * @param string $instance Optional
+     * @param string $projectId
+     * 
+     * @param string $instanceId
      *
      * @return string The formatted instance resource.
-     * @experimental
      */
-	public static function instanceName($projectId, $instanceId)
+	public function instanceName($projectId, $instanceId)
 	{
 		$formattedParent = BigtableInstanceAdminClient::instanceName($projectId, $instanceId);
 		return $formattedParent;
@@ -61,37 +60,40 @@ class BigtableInstance
      *                               e.g., just `myinstance` rather than
      *                               `projects/myproject/instances/myinstance`.
      *
+     * @param string   $location     values should be of the form
+     *                               `projects/<project>/locations/<zone>`.
+     *                               
      * @param string   $clusterId    cluseter id
      *
      * @param array    $optionalArgs {
      *                               Optional.
      *
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
+     *          Retry settings to use for this call. Can be a
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
+     *          of retry settings parameters. See the documentation on
+     *          {@see Google\GAX\RetrySettings} for example usage.
+     * }
+     *
      * @return \Google\GAX\OperationResponse
 	 *
      * @throws \Google\GAX\ApiException if the remote call fails
-     * @experimental
      */
-	public function createInstance($parent, $instanceId, $clusterId, $optionalArgs = [])
+	public function createInstance($parent, $instanceId, $location, $clusterId, $optionalArgs = [])
 	{
-		try 
-		{   
-			$instance = new Instance();
-			$instance->setDisplayName($instanceId);
-			$instance->setType(2);
+        $instance = new Instance();
+        $instance->setDisplayName($instanceId);
+        $instance->setType(2);
 
-			$clusters = new Cluster();
-			$clusters->setName($clusterId);
-			$clusters->setDefaultStorageType(2);
-			$clusters->setLocation($parent."/locations/us-central1-c");
-			$MapField = new MapField(GPBType::STRING,GPBType::MESSAGE, Cluster::class);
-			$MapField[$clusterId] = $clusters;
+        $clusters = new Cluster();
+        $clusters->setName($clusterId);
+        $clusters->setDefaultStorageType(2);
+        $clusters->setLocation($location);
+        $MapField = new MapField(GPBType::STRING,GPBType::MESSAGE, Cluster::class);
+        $MapField[$clusterId] = $clusters;
 
-			$OperationResponse = $this->BigtableInstanceAdminClient->createInstance($parent, $instanceId, $instance, $MapField, $optionalArgs);
-			return $OperationResponse;
-	    }
-	    finally {
-	    	$this->BigtableInstanceAdminClient->close();
-	    }
+        $OperationResponse = $this->BigtableInstanceAdminClient->createInstance($parent, $instanceId, $instance, $MapField, $optionalArgs);
+        return $OperationResponse;
 	}
 
 	/**
@@ -106,6 +108,7 @@ class BigtableInstance
      *                             to avoid confusion.
      * @param int    $type         The type of the instance. Defaults to `PRODUCTION`.
      *                             For allowed values, use constants defined on {@see \Google\Bigtable\Admin\V2\Instance_Type}
+     * 
      * @param array  $optionalArgs {
      *                             Optional.
      *
@@ -136,47 +139,52 @@ class BigtableInstance
      *
      * @param string $parent       The unique name of the project for which a list of instances is requested.
      *                             Values are of the form `projects/<project>`.
+     * 
      * @param array  $optionalArgs {
      *                             Optional.
      *
+     *     @type string $pageToken
+     *          The value of `next_page_token` returned by a previous call.
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
+     *          Retry settings to use for this call. Can be a
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
+     *          of retry settings parameters. See the documentation on
+     *          {@see Google\GAX\RetrySettings} for example usage.
+     * }
      *
 	 * @return \Google\Bigtable\Admin\V2\ListInstancesResponse
+     * 
      * @throws \Google\GAX\ApiException if the remote call fails
-     * @experimental
     */
 	public function listInstances($parent, $optionalArgs = [])
 	{
-		try 
-		{
-			$ListInstancesResponse = $this->BigtableInstanceAdminClient->listInstances($parent, []);
-			return $ListInstancesResponse;
-	    }
-	    finally {
-	    	$this->BigtableInstanceAdminClient->close();
-	    }
+        $ListInstances = $this->BigtableInstanceAdminClient->listInstances($parent, $optionalArgs);
+        return $ListInstances;
 	}
 
 	/**
      * Delete an instance from a project.
      *
-     * @param string $name         The unique name of the instance to be deleted.
-     *                             Values are of the form `projects/<project>/instances/<instance>`.
+     * @param string $formattedParent    The unique name of the instance to be deleted.
+     *                                   Values are of the form `projects/<project>/instances/<instance>`.
+     * 
      * @param array  $optionalArgs {
      *                             Optional.
      *
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
+     *          Retry settings to use for this call. Can be a
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
+     *          of retry settings parameters. See the documentation on
+     *          {@see Google\GAX\RetrySettings} for example usage.
+     * }
+     * 
+     * @return \Google\Protobuf\GPBEmpty
+     * 
      * @throws \Google\GAX\ApiException if the remote call fails
-     * @experimental
      */
-	public function deleteInstance($name, $optionalArgs = [])
+	public function deleteInstance($formattedParent, $optionalArgs = [])
 	{
-		try 
-		{
-			$response = $this->BigtableInstanceAdminClient->deleteInstance($name, $optionalArgs);
-			return $response;
-	    }
-	    finally {
-	    	$this->BigtableInstanceAdminClient->close();
-	    }
+        $response = $this->BigtableInstanceAdminClient->deleteInstance($formattedParent, $optionalArgs);
+        return $response;
     }
 }
-?>

@@ -40,8 +40,8 @@ class BigtableTable
 	 * Formats a string containing the fully-qualified path to represent
 	 * a instance resource.
 	 *
-	 * @param string $projectId projectId
-	 * @param string $instanceId instanceId
+	 * @param string $projectId
+	 * @param string $instanceId
 	 *
 	 * @return string The formatted instance resource.
 	 */
@@ -55,17 +55,44 @@ class BigtableTable
 	 * Creates a new table in the specified instance.
 	 * @param string $parent       The unique name of the instance in which to create the table.
 	 *                             Values are of the form `projects/<project>/instances/<instance>`.
+	 * 
 	 * @param string $tableId      The name by which the new table should be referred to within the parent
 	 *                             instance, e.g., `foobar` rather than `<parent>/tables/foobar`.
+	 * 
 	 * @param array  $optionalArgs {
-	 *                             Optional.
+     *                             Optional.
+     *
+     *     @type Split[] $initialSplits
+     *          The optional list of row keys that will be used to initially split the
+     *          table into several tablets (tablets are similar to HBase regions).
+     *          Given two split keys, `s1` and `s2`, three tablets will be created,
+     *          spanning the key ranges: `[, s1), [s1, s2), [s2, )`.
+     *
+     *          Example:
+     *
+     *          * Row keys := `["a", "apple", "custom", "customer_1", "customer_2",`
+     *                         `"other", "zz"]`
+     *          * initial_split_keys := `["apple", "customer_1", "customer_2", "other"]`
+     *          * Key assignment:
+     *              - Tablet 1 `[, apple)                => {"a"}.`
+     *              - Tablet 2 `[apple, customer_1)      => {"apple", "custom"}.`
+     *              - Tablet 3 `[customer_1, customer_2) => {"customer_1"}.`
+     *              - Tablet 4 `[customer_2, other)      => {"customer_2"}.`
+     *              - Tablet 5 `[other, )                => {"other", "zz"}.`
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
+     *          Retry settings to use for this call. Can be a
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
+     *          of retry settings parameters. See the documentation on
+     *          {@see Google\GAX\RetrySettings} for example usage.
+     * }
 	 * @return \Google\Bigtable\Admin\V2\Table
+	 * 
+	 * @throws \Google\GAX\ApiException if the remote call fails
 	 */
 	public function createTable($parent, $tableId, $optionalArgs = [])
 	{
-		$Table = new Table();
-		$table = $this->BigtableTableAdminClient->createTable($parent, $tableId, $Table, $optionalArgs);
-		return $table;
+		$Table = $this->BigtableTableAdminClient->createTable($parent, $tableId, new Table(), $optionalArgs);
+		return $Table;
 	}
 
 	/**
@@ -73,13 +100,13 @@ class BigtableTable
 	 *
 	 * @param string $projectId
 	 * @param string $instanceId
-	 * @param string $table
+	 * @param string $tableId
 	 *
 	 * @return string The formatted table resource.
 	 */
-	public function tableName($projectId, $instanceId, $table)
+	public function tableName($projectId, $instanceId, $tableId)
 	{
-		return BigtableTableAdminClient::tableName($projectId, $instanceId, $table);
+		return BigtableTableAdminClient::tableName($projectId, $instanceId, $tableId);
 	}
 
 	/**
@@ -89,9 +116,36 @@ class BigtableTable
 	 * @param string $tableId      The name by which the new table should be referred to within the parent
 	 *                             instance, e.g., `foobar` rather than `<parent>/tables/foobar`.
 	 * @param string $columnFamily e.g., `cf`
+	 * 
 	 * @param array  $optionalArgs {
-	 *                             Optional.
+     *                             Optional.
+     *
+     *     @type Split[] $initialSplits
+     *          The optional list of row keys that will be used to initially split the
+     *          table into several tablets (tablets are similar to HBase regions).
+     *          Given two split keys, `s1` and `s2`, three tablets will be created,
+     *          spanning the key ranges: `[, s1), [s1, s2), [s2, )`.
+     *
+     *          Example:
+     *
+     *          * Row keys := `["a", "apple", "custom", "customer_1", "customer_2",`
+     *                         `"other", "zz"]`
+     *          * initial_split_keys := `["apple", "customer_1", "customer_2", "other"]`
+     *          * Key assignment:
+     *              - Tablet 1 `[, apple)                => {"a"}.`
+     *              - Tablet 2 `[apple, customer_1)      => {"apple", "custom"}.`
+     *              - Tablet 3 `[customer_1, customer_2) => {"customer_1"}.`
+     *              - Tablet 4 `[customer_2, other)      => {"customer_2"}.`
+     *              - Tablet 5 `[other, )                => {"other", "zz"}.`
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
+     *          Retry settings to use for this call. Can be a
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
+     *          of retry settings parameters. See the documentation on
+     *          {@see Google\GAX\RetrySettings} for example usage.
+     * }
 	 * @return \Google\Bigtable\Admin\V2\Table
+	 * 
+	 * @throws \Google\GAX\ApiException if the remote call fails
 	 */
 	public function createTableWithColumnFamily($parent, $tableId, $columnFamily, $optionalArgs = [])
 	{
@@ -100,8 +154,9 @@ class BigtableTable
 
 		$MapField = $this->columnFamily(3, $columnFamily);
 		$table->setColumnFamilies($MapField);
-		$table = $this->BigtableTableAdminClient->createTable($parent, $tableId, $table, $optionalArgs);
-		return $table;
+
+		$Table = $this->BigtableTableAdminClient->createTable($parent, $tableId, $table, $optionalArgs);
+		return $Table;
 	}
 
 	/**
@@ -109,6 +164,7 @@ class BigtableTable
 	 * @param integer $MaxNumVersions 
 	 *                             
 	 * @param string $columnFamily e.g., `cf`
+	 * 
 	 * @return \Google\Protobuf\Internal\MapField
 	 */
 	public function columnFamily($MaxNumVersions, $columnFamily)
@@ -131,12 +187,19 @@ class BigtableTable
 	 *                          	Values are of the form
 	 *                          	`projects/<project>/instances/<instance>/tables/<table>`.
 	 * @param array  $optionalArgs {
-	 *                             Optional.
-	 *
+     *                             Optional.
+     *
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
+     *          Retry settings to use for this call. Can be a
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
+     *          of retry settings parameters. See the documentation on
+     *          {@see Google\GAX\RetrySettings} for example usage.
+     * }
+	 * 
 	 * @throws \Google\GAX\ApiException if the remote call fails
 	 */
 	public function deleteTable($table, $optionalArgs = []) {
-		return $this->BigtableTableAdminClient->deleteTable($table);
+		return $this->BigtableTableAdminClient->deleteTable($table, $optionalArgs);
 	}
 
 	/**
@@ -145,8 +208,24 @@ class BigtableTable
 	 * @param string $parent       The unique name of the instance for which tables should be listed.
 	 *                             Values are of the form `projects/<project>/instances/<instance>`.
 	 * @param array  $optionalArgs {
-	 *                             Optional.
-	 *
+     *                             Optional.
+     *
+     *     @type int $view
+     *          The view to be applied to the returned tables' fields.
+     *          Defaults to `NAME_ONLY` if unspecified; no others are currently supported.
+     *          For allowed values, use constants defined on {@see \Google\Bigtable\Admin\V2\Table_View}
+     *     @type string $pageToken
+     *          A page token is used to specify a page of values to be returned.
+     *          If no page token is specified (the default), the first page
+     *          of values will be returned. Any page token used here must have
+     *          been generated by a previous call to the API.
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
+     *          Retry settings to use for this call. Can be a
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
+     *          of retry settings parameters. See the documentation on
+     *          {@see Google\GAX\RetrySettings} for example usage.
+     * }
+	 * 
 	 * @return \Google\GAX\PagedListResponse
 	 */
 	public function listTables($parent, $optionalArgs = []) {
@@ -177,9 +256,16 @@ class BigtableTable
 	 *                              `projects/<project>/instances/<instance>/tables/<table>`.
 	 * @param string $cfName        Column family name.
 	 *
-	 * @param array  $optionalArgs {
-	 *                             Optional.
-	 *
+	 * @param array $optionalArgs  {
+     *                              Optional.
+     *
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
+     *          Retry settings to use for this call. Can be a
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
+     *          of retry settings parameters. See the documentation on
+     *          {@see Google\GAX\RetrySettings} for example usage.
+     * }
+	 * 
 	 * @return \Google\Bigtable\Admin\V2\Table
 	 *
 	 * @throws \Google\GAX\ApiException if the remote call fails
@@ -198,7 +284,7 @@ class BigtableTable
 		$Modifications    = [];
 		$Modifications[0] = $Modification;
 
-		$table = $this->BigtableTableAdminClient->modifyColumnFamilies($table, $Modifications, []);
+		$table = $this->BigtableTableAdminClient->modifyColumnFamilies($table, $Modifications, $optionalArgs);
 		return $table;
 	}
 
@@ -210,13 +296,19 @@ class BigtableTable
 	 *                              `projects/<project>/instances/<instance>/tables/<table>`.
 	 * @param string $cfName        Column family name.
 	 *
-	 * @param array  $optionalArgs {
-	 *                             Optional.
+	 * @param array $optionalArgs  {
+     *                              Optional.
+     *
+     *     @type \Google\GAX\RetrySettings|array $retrySettings
+     *          Retry settings to use for this call. Can be a
+     *          {@see Google\GAX\RetrySettings} object, or an associative array
+     *          of retry settings parameters. See the documentation on
+     *          {@see Google\GAX\RetrySettings} for example usage.
+     * }
 	 *
 	 * @return \Google\Bigtable\Admin\V2\Table
 	 *
 	 * @throws \Google\GAX\ApiException if the remote call fails
-	 * @experimental
 	 */
 	public function deleteColumnFamilies($table, $cfName, $optionalArgs = []) {
 		$Modification = new Modification();
@@ -225,7 +317,7 @@ class BigtableTable
 		$Modifications = [];
 		$Modifications[] = $Modification;
 
-		$table = $this->BigtableTableAdminClient->modifyColumnFamilies($table, $Modifications, []);
+		$table = $this->BigtableTableAdminClient->modifyColumnFamilies($table, $Modifications, $optionalArgs);
 		return $table;
 	}
 
@@ -283,27 +375,10 @@ class BigtableTable
      *
      * @throws \Google\GAX\ApiException if the remote call fails
      */
-	public function mutateRow($tableName, $rowKey, $mutations)
+	public function mutateRow($tableName, $rowKey, $mutations, $optionalArgs = [])
 	{
-		$MutateRowResponse = $this->BigtableClient->mutateRow($tableName, $rowKey, $mutations);
+		$MutateRowResponse = $this->BigtableClient->mutateRow($tableName, $rowKey, $mutations, $optionalArgs);
 		return $MutateRowResponse;
-	}
-
-	/**
-	 * Set Mutate Rows Request.
-	 * 
-	 * @param string $rowKey
-	 * 
-	 * @param Mutation[] $mutations
-	 * 
-	 * @return \Google\Bigtable\V2\MutateRowsRequest_Entry 
-	 */
-	public function mutateRowsRequest($rowKey, $mutations)
-	{
-		$MutateRowsRequest_Entry = new MutateRowsRequest_Entry();
-        $MutateRowsRequest_Entry->setRowKey($rowKey);
-		$MutateRowsRequest_Entry->setMutations($mutations);
-		return $MutateRowsRequest_Entry;
 	}
 
 	/**
@@ -333,6 +408,23 @@ class BigtableTable
 		$Mutation->setSetCell($Mutation_SetCell);
 		return $Mutation;
 	}
+	
+	/**
+	 * Set Mutate Rows Request.
+	 * 
+	 * @param string $rowKey
+	 * 
+	 * @param Mutation[] $mutations 	array of \Google\Bigtable\V2\Mutation
+	 * 
+	 * @return \Google\Bigtable\V2\MutateRowsRequest_Entry 
+	 */
+	public function mutateRowsRequest($rowKey, $mutations)
+	{
+		$MutateRowsRequest_Entry = new MutateRowsRequest_Entry();
+        $MutateRowsRequest_Entry->setRowKey($rowKey);
+		$MutateRowsRequest_Entry->setMutations($mutations);
+		return $MutateRowsRequest_Entry;
+	}
 
 	/**
 	 * Read row from table.
@@ -355,18 +447,15 @@ class BigtableTable
 	 * }
 	 *
 	 * @return \Google\Cloud\Bigtable\V2\FlatRow
+	 * 
+	 * @throws \Google\GAX\ApiException if the remote call fails
 	 */
-	public function readRows($table, $rowKeys = [], $filter = [], $rowsLimit = '', $timeoutMillis = '') {
+	public function readRows($table, $rowKeys = [], $rowsLimit = '', $timeoutMillis = '') {
 		$optionalArgs = [];
 		if (count($rowKeys) > 0) {
 			$rowSet = new RowSet();
 			$rowSet->setRowKeys($rowKeys);
 			$optionalArgs['rows'] = $rowSet;
-		}
-
-		if (count($filter) > 0) {
-			$rowFilter = new RowFilter();
-			// $optionalArgs['filter'] = $rowFilter;
 		}
 
 		if ($rowsLimit) {
@@ -386,4 +475,3 @@ class BigtableTable
 		return $rows;
 	}
 }
-?>

@@ -1,10 +1,4 @@
 <?php
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-putenv('GOOGLE_APPLICATION_CREDENTIALS=../Grass Clump 479-b5c624400920.json');
-
 require '../vendor/autoload.php';
 
 use Google\Bigtable\V2\ReadRowsResponse;
@@ -20,13 +14,14 @@ use PHPUnit\Framework\TestCase;
 /**
  *
  */
-class ReadRowsAcceptanceTest extends TestCase {
+class ReadRowsAcceptanceTest extends TestCase
+{
 
 	private $flatRows = [];
 	private $errorCount;
 
-	/** @test */
-	public function FunctionName() {
+	public function testReadJson()
+	{
 		echo "\n Read Row Acceptance tests \n";
 		echo "------------------------------------------------------- \n";
 		$str  = file_get_contents('read-rows-acceptance-test.json');
@@ -38,7 +33,8 @@ class ReadRowsAcceptanceTest extends TestCase {
 		}
 	}
 
-	public function runAcceptanceTest($test) {
+	public function runAcceptanceTest($test)
+	{
 		echo "\t".$test['name'];
 		echo "\n";
 
@@ -69,8 +65,8 @@ class ReadRowsAcceptanceTest extends TestCase {
 			$actualError = 1;
 		}
 
-		// $this->assertEquals($this->errorCount , $actualError);
-		// $this->assertEquals(count($this->flatRows) , count($actualFlatRows));
+		$this->assertEquals($this->errorCount , $actualError);
+		$this->assertEquals(count($this->flatRows) , count($actualFlatRows));
 		$this->assertEquals($this->flatRows, $actualFlatRows);
 	}
 
@@ -113,13 +109,4 @@ class ReadRowsAcceptanceTest extends TestCase {
 		}
 	}
 }
-
-$str = file_get_contents('read-rows-acceptance-test.json');
-$json = json_decode($str, true)['tests'];// decode the JSON into an associative array
-
-foreach ($json as $test) {
-	$readRowsAcceptanceTest = new ReadRowsAcceptanceTest();
-	$readRowsAcceptanceTest->runAcceptanceTest($test);
-}
-
 ?>

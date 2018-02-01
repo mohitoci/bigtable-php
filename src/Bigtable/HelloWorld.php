@@ -1,7 +1,5 @@
 <?php
-
 require 'vendor/autoload.php';
-putenv('GOOGLE_APPLICATION_CREDENTIALS=Grass_Clump_479-b5c624400920.json');
 
 use Google\Cloud\Bigtable\src\BigtableTable;
 
@@ -10,8 +8,8 @@ use Google\Cloud\Bigtable\src\BigtableTable;
  * and performs some basic operations.
  */
 
-class HelloWorld {
-
+class HelloWorld
+{
 	private $tableName    = 'Hello-Bigtable';
 	private $columnFamily = 'cf';
 	private $rowKey       = 'key';
@@ -19,7 +17,8 @@ class HelloWorld {
 	/**
 	 * Connects to Cloud Bigtable, runs some basic operations and prints the results.
 	 */
-	public function doHelloWorld($projectId, $instanceId) {
+	public function doHelloWorld($projectId, $instanceId)
+	{
 
 		$bigtableTable = new BigtableTable();
 
@@ -92,11 +91,14 @@ class HelloWorld {
 
 	}
 
-	private function print($msg) {
-		echo "HelloWorld: ".$msg."<br>";
+	private function print($msg)
+	{
+		echo "HelloWorld: $msg <br>";
 	}
 }
 
+$projectId = "grass-clump-479";
+$instanceId = "hello-bigtable";
 $HelloWorld = new HelloWorld();
-$HelloWorld->doHelloWorld('grass-clump-479', 'hello-bigtable');
+$HelloWorld->doHelloWorld($projectId, $instanceId);
 ?>

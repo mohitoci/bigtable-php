@@ -71,12 +71,8 @@ class BigtableCluster
      */
     public function getCluster($name, $optionalArgs = [])
     {
-        try {
-            $Cluster = $this->bigtableInstanceAdminClient->getCluster($name, $optionalArgs);
-            return $Cluster;
-        } finally {
-            $this->bigtableInstanceAdminClient->close();
-        }
+        $Cluster = $this->bigtableInstanceAdminClient->getCluster($name, $optionalArgs);
+        return $Cluster;
     }
 
     /**

@@ -3,12 +3,14 @@ require '../vendor/autoload.php';
 
 use Google\Cloud\Bigtable\src\BigtableTable;
 
-class PerformanceTest {
+class PerformanceTest
+{
 	private $BigtableTable;
 	private $randomValues;
 	private $randomTotal = 1000;
 
-	function __construct() {
+	function __construct()
+	{
 		$this->BigtableTable = new BigtableTable();
 		$length              = 100;
 		for ($i = 1; $i <= $this->randomTotal; $i++) {
@@ -25,15 +27,16 @@ class PerformanceTest {
 	 * @param string $rowKey_pref   ex. perf
 	 * @param string $columnFamily	column family name
 	 * @param array  optionalArgs{
-	 *     @integer $total_row
-	 *     @integer $batch_size
-	 *     @integer $timeoutMillis
+	 *     @type int $total_row
+	 *     @type int $batch_size
+	 *     @type int $timeoutMillis Timeout to use for this call.
 	 *
 	 * @return array
 	 */
-	public function loadRecord($table, $rowKey_pref, $columnFamily, $optionalArgs = []) {
-		$total_row  = (isset($optionalArgs['total_row']))?$optionalArgs['total_row']:10000;
-		$batch_size = (isset($optionalArgs['batch_size']))?$optionalArgs['batch_size']:1000;
+	public function loadRecord($table, $rowKey_pref, $columnFamily, $optionalArgs = [])
+	{
+		$total_row  = $optionalArgs['total_row'];
+		$batch_size = $optionalArgs['batch_size'];
 
 		if ($total_row < $batch_size) {
 			throw new ValidationException('Please set total row (total_row) >= '.$batch_size);
@@ -68,11 +71,8 @@ class PerformanceTest {
 
 			$startTime    = round(microtime(true)*1000);
 			$ServerStream = $this->BigtableTable->mutateRows($table, $entries, $optionalArgs);
-			$endTime      = round(microtime(true)*1000)-$startTime;
-			hdr_record_value($hdr, $endTime);
-			echo "\nProcess time for mutateRows ".$index." is ".$endTime;
-			$current = $ServerStream->readAll()->current();
-			$Entries = $current->getEntries();
+			$current      = $ServerStream->readAll()->current();
+			$Entries      = $current->getEntries();
 			foreach ($Entries->getIterator() as $Iterator) {
 				$status = $Iterator->getStatus();
 				$code   = $status->getCode();
@@ -82,6 +82,9 @@ class PerformanceTest {
 					$failure++;
 				}
 			}
+			$endTime = round(microtime(true)*1000)-$startTime;
+			hdr_record_value($hdr, $endTime);
+			// echo "\nProcess time for mutateRows ".$index." is ".$endTime;
 		}
 		$time_elapsed_secs = round(microtime(true)*1000)-$processStartTime;
 		echo "\nTotal time take for loading rows is $time_elapsed_secs (milli sec)";
@@ -118,13 +121,14 @@ class PerformanceTest {
 	 * @param string $rowKey_pref   ex. perf
 	 * @param string $cf   			column family name
 	 * @param array  option{
-	 *     @integer $total_row
-	 *     @integer $timeoutsec
+	 *     @type int $total_row
+	 *     @type int $timeoutsec
 	 *
 	 * @return array
 	 */
-	public function randomReadWrite($table, $rowKey_pref, $cf, $option) {
-		$total_row      = (isset($option['total_row']))?$option['total_row']:10000000;
+	public function randomReadWrite($table, $rowKey_pref, $cf, $option)
+	{
+		$total_row      = $option['total_row'];
 		$readRowsTotal  = ['success' => [], 'failure' => []];
 		$writeRowsTotal = ['success' => [], 'failure' => []];
 
@@ -273,8 +277,7 @@ if (!isset($batchSize)) {
 	exit("batchSize is missing\n");
 }
 
-// $timeoutMillis = 6*60*60000; //60000 = 60 sec
-$options                                              = ['total_row' => $totalRows, 'batch_size' => $batchSize];
+$options = ['total_row' => $totalRows, 'batch_size' => $batchSize];
 if (isset($timeoutMillis)) {$options['timeoutMillis'] = $timeoutMillis;
 }
 
